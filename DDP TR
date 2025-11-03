@@ -1,1 +1,251 @@
+#include <stdio.h>
+#include <string.h>
+
+struct Mahasiswa {
+    int nim;
+    char nama[50];
+    char jurusan[50];
+};
+
+struct Jurusan {
+    char nama[50];
+    char kode[10];
+};
+
+// === Validasi Huruf ===4
+int validHuruf(char teks[]) {
+    for (int i = 0; teks[i]; i++) {
+        char c = teks[i];
+        if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == ' '))
+            return 0;
+    }
+    return 1;
+
+}
+
+// === Input Aman Angka ===
+int inputAngka(const char *label) {
+    int val;
+    while (1) {
+        printf("%s", label);
+        if (scanf("%d", &val) == 1) {
+            while (getchar() != '\n'); // bersihkan buffer
+            return val;
+        } else {
+            printf("Input salah! Harus angka.\n");
+            while (getchar() != '\n');
+        }
+    }
+}
+
+// === Input Aman Teks ===
+void inputTeks(const char *label, char *tujuan) {
+    do {
+        printf("%s", label);
+        scanf(" %[^\n]", tujuan);
+        if (!validHuruf(tujuan))
+            printf("Input hanya boleh huruf dan spasi!\n");
+    } while (!validHuruf(tujuan));
+}
+
+void tampilkanMenu() {
+    printf("\n=== Menu Manajemen Data ===\n");
+    printf("1. Master Data Mahasiswa\n");
+    printf("2. Master Data Jurusan\n");
+    printf("3. Report\n");
+    printf("4. Keluar\n");
+    printf("Pilih opsi (1-4): ");
+}
+
+void tampilkanMenuMahasiswa() {
+    printf("\n=== Master Data Mahasiswa ===\n");
+    printf("1. Daftar Mahasiswa\n");
+    printf("2. Tambah Mahasiswa\n");
+    printf("3. Hapus Mahasiswa\n");
+    printf("4. Edit Mahasiswa\n");
+    printf("5. Kembali ke Menu Utama\n");
+    printf("Pilih: ");
+}
+
+void tampilkanMenuJurusan() {
+    printf("\n=== Master Data Jurusan ===\n");
+    printf("1. Daftar Jurusan\n");
+    printf("2. Tambah Jurusan\n");
+    printf("3. Edit Jurusan\n");
+    printf("4. Hapus Jurusan\n");
+    printf("5. Kembali ke Menu Utama\n");
+    printf("Pilih: ");
+}
+
+int main() {
+    int pilihanUtama, pilihanMahasiswa, pilihanJurusan;
+    
+    struct Mahasiswa data[100];
+    int jumlahMahasiswa = 0;
+
+    struct Jurusan jurusan[100];
+    int jumlahJurusan = 0;
+
+    do {
+        tampilkanMenu();
+    
+        pilihanUtama = inputAngka("");
+
+        switch (pilihanUtama) {
+            case 1: // MASTER DATA MAHASISWA
+                do {
+                    tampilkanMenuMahasiswa();
+                    pilihanMahasiswa = inputAngka("");
+
+                    switch (pilihanMahasiswa) {
+                        case 1: // Daftar Mahasiswa
+                            if (jumlahMahasiswa == 0)
+                                printf("Data mahasiswa kosong.\n");
+                            else
+                                for (int i = 0; i < jumlahMahasiswa; i++)
+                                    printf("%d. NIM: %d, Nama: %s, Jurusan: %s\n",
+                                           i+1, data[i].nim, data[i].nama, data[i].jurusan);
+                            break;
+
+                        case 2: // Tambah Mahasiswa
+                            data[jumlahMahasiswa].nim = inputAngka("Masukkan NIM: ");
+                            inputTeks("Masukkan Nama: ", data[jumlahMahasiswa].nama);
+                            inputTeks("Masukkan Jurusan: ", data[jumlahMahasiswa].jurusan);
+                            jumlahMahasiswa++;
+                            printf("Data berhasil ditambahkan!\n");
+                            break;
+
+                        case 3: { // Hapus Mahasiswa
+                            if (jumlahMahasiswa == 0) { printf("Data kosong.\n"); break; }
+                            int nimHapus = inputAngka("Masukkan NIM yang akan dihapus: ");
+                            int idx = -1;
+                            for (int i = 0; i < jumlahMahasiswa; i++)
+                                if (data[i].nim == nimHapus) { idx = i; break; }
+
+                            if (idx == -1)
+                                printf("Mahasiswa tidak ditemukan.\n");
+                            else {
+                                char konfirmasi;
+                                printf("Hapus %s (NIM %d)? (Y/N): ", data[idx].nama, nimHapus);
+                                scanf(" %c", &konfirmasi);
+                                if (konfirmasi=='Y'||konfirmasi=='y') {
+                                    for (int i = idx; i < jumlahMahasiswa-1; i++)
+                                        data[i] = data[i+1];
+                                    jumlahMahasiswa--;
+                                    printf("Data berhasil dihapus.\n");
+                                } else printf("Penghapusan dibatalkan.\n");
+                            }
+                            break;
+                        }
+
+                        case 4: // Edit Mahasiswa
+                            if (jumlahMahasiswa == 0) { printf("Data kosong.\n"); break; }
+                            int nimEdit, idxEdit=-1;
+                            nimEdit = inputAngka("Masukkan NIM yang akan diedit: ");
+                            for (int i=0;i<jumlahMahasiswa;i++)
+                                if (data[i].nim==nimEdit) { idxEdit=i; break; }
+                            if (idxEdit==-1) printf("Mahasiswa tidak ditemukan.\n");
+                            else {
+                                inputTeks("Masukkan Nama baru: ", data[idxEdit].nama);
+                                inputTeks("Masukkan Jurusan baru: ", data[idxEdit].jurusan);
+                                printf("Data berhasil diupdate!\n");
+                            }
+                            break;
+
+                        case 5:
+                            printf("Kembali ke menu utama...\n");
+                            break;
+                        default:
+                            printf("Opsi tidak valid.\n");
+                            break;
+                    }
+                } while (pilihanMahasiswa != 5);
+                break;
+
+            case 2: // MASTER DATA JURUSAN
+                do {
+                    tampilkanMenuJurusan();
+                    pilihanJurusan = inputAngka("");
+
+                    switch (pilihanJurusan) {
+                        case 1: // Daftar Jurusan
+                            if (jumlahJurusan==0) printf("Data jurusan kosong.\n");
+                            else for (int i=0;i<jumlahJurusan;i++)
+                                printf("%d. Kode: %s, Nama: %s\n", i+1, jurusan[i].kode, jurusan[i].nama);
+                            break;
+
+                        case 2: // Tambah Jurusan
+                            inputTeks("Masukkan Kode Jurusan: ", jurusan[jumlahJurusan].kode);
+                            inputTeks("Masukkan Nama Jurusan: ", jurusan[jumlahJurusan].nama);
+                            jumlahJurusan++;
+                            printf("Data jurusan berhasil ditambahkan!\n");
+                            break;
+
+                        case 3: // Edit Jurusan
+                            if (jumlahJurusan==0) { printf("Data kosong.\n"); break; }
+                            char kodeEdit[10];
+                            inputTeks("Masukkan Kode Jurusan yang akan diedit: ", kodeEdit);
+                            int idxJur=-1;
+                            for (int i=0;i<jumlahJurusan;i++)
+                                if (strcmp(jurusan[i].kode,kodeEdit)==0) { idxJur=i; break; }
+                            if (idxJur==-1) printf("Jurusan tidak ditemukan.\n");
+                            else {
+                                inputTeks("Masukkan Kode baru: ", jurusan[idxJur].kode);
+                                inputTeks("Masukkan Nama baru: ", jurusan[idxJur].nama);
+                                printf("Data berhasil diupdate!\n");
+                            }
+                            break;
+
+                        case 4: // Hapus Jurusan
+                            if (jumlahJurusan==0) { printf("Data kosong.\n"); break; }
+                            char kodeHapus[10];
+                            inputTeks("Masukkan Kode Jurusan yang akan dihapus: ", kodeHapus);
+                            int idxHapus=-1;
+                            for (int i=0;i<jumlahJurusan;i++)
+                                if (strcmp(jurusan[i].kode,kodeHapus)==0) { idxHapus=i; break; }
+                            if (idxHapus==-1) printf("Jurusan tidak ditemukan.\n");
+                            else {
+                                char konfirmasi;
+                                printf("Hapus jurusan %s (Kode %s)? (Y/N): ", jurusan[idxHapus].nama, kodeHapus);
+                                scanf(" %c",&konfirmasi);
+                                if (konfirmasi=='Y'||konfirmasi=='y') {
+                                    for (int i=idxHapus;i<jumlahJurusan-1;i++)
+                                        jurusan[i]=jurusan[i+1];
+                                    jumlahJurusan--;
+                                    printf("Data berhasil dihapus.\n");
+                                } else printf("Penghapusan dibatalkan.\n");
+                            }
+                            break;
+
+                        case 5:
+                            printf("Kembali ke menu utama...\n");
+                            break;
+
+                        default:
+                            printf("Opsi tidak valid.\n");
+                            break;
+                    }
+
+                } while (pilihanJurusan != 5);
+                break;
+
+            case 3:
+                printf("Menu Report belum dibuat.\n");
+
+
+                break;
+
+            case 4:
+                printf("Keluar dari program...\n");
+                break;
+
+            default:
+                printf("Opsi tidak valid.\n2");
+                break;
+        }
+
+    } while (pilihanUtama != 4);
+
+    return 0;
+}
 
