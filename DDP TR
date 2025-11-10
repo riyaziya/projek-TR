@@ -230,7 +230,7 @@ int main() {
                 break;
 
             case 3:
-                printf("Menu Report belum dibuat.\n");
+                printf("Menu Report masih belom dibuat.\n");
 
 
                 break;
