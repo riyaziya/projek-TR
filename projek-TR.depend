@@ -4,8 +4,9 @@
 	<stdlib.h>
 	<string.h>
 
-1763301568 source:d:\ddp\projek-tr\main.c
+1763366349 source:d:\ddp\projek-tr\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
+	<stdbool.h>
 

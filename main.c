@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define FILE_NAME "mahasiswa.txt"
 #define FILE_JURUSAN_NAME "jurusan.txt"
@@ -169,6 +170,17 @@ void tampilkanMenuReporting() {
     printf("Pilih: ");
 }
 
+bool cariMahasiswaByNim(struct Mahasiswa daftar[], const char *nim) {
+    for (int i = 0; i < 100; i++) {
+        if (daftar[i].nim[0] == '\0')
+            continue;
+
+        if (strcmp(daftar[i].nim, nim) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
 
 int main() {
     int pilihanUtama, pilihanMahasiswa, pilihanJurusan;
@@ -225,41 +237,80 @@ int main() {
 
 
                         case 2: // Tambah Mahasiswa
-                           system("cls");
-                           int pilihan_input_jurusan;
-                           int input_nim;
-                           struct Mahasiswa mhs;
-                           printf("=== Tambah Data Mahasiswa ===");
-                           printf("Pilihan jurusan:\n");
-                           dataJurusan=readJurusanFile();
-                           if (dataJurusan[0].kode_jurusan == NULL){
-                                printf("Daftar Jurusan kosong.\n");
-                            }else{
-                                for (int i = 0; i < 100; i++) {
-                                    if (dataJurusan[i].kode_jurusan[0] != '\0') {
-                                        printf("%d. (%s) %s\n",
-                                               i + 1,
-                                               dataJurusan[i].kode_jurusan,
-                                               dataJurusan[i].nama_jurusan);
-                                    } else {
-                                        break;
+                          {
+                                system("cls");
+                                int pilihan_input_jurusan;
+                                int input_nim;
+                                struct Mahasiswa mhs;
+                                printf("=== Tambah Data Mahasiswa ===\n");
+                                printf("Pilihan jurusan : \n");
+                                dataJurusan = readJurusanFile();
+                                data = readMahasiswaFile();
+                                if (dataJurusan == NULL) {
+                                    printf("Daftar jurusan kosong atau file tidak ditemukan.\n");
+                                    break;
+                                }
+                                if (dataJurusan[0].kode_jurusan == NULL){
+                                    printf("Daftar Jurusan kosong.\n");
+                                }else{
+                                    for (int i = 0; i < 100; i++) {
+                                        if (dataJurusan[i].kode_jurusan[0] != '\0') {
+                                            printf("%d. (%s) %s\n",
+                                                   i + 1,
+                                                   dataJurusan[i].kode_jurusan,
+                                                   dataJurusan[i].nama_jurusan);
+                                        } else {
+                                            break;
+                                        }
                                     }
                                 }
+
+                                char nim_str[10];
+                                char nim_cari[10];
+                                bool hasil_cek = false;
+
+                                printf("Pilih jurusan : ");
+                                pilihan_input_jurusan = inputAngka("");
+                                do{
+                                    printf("Masukkan NIM : %s", dataJurusan[pilihan_input_jurusan-1].kode_jurusan);
+                                    // input nim (angka)
+                                    input_nim = inputAngka("");
+                                    // ubah nim ke char[10]
+                                    sprintf(nim_str, "%d", input_nim);
+
+                                    //cek nim apakah sudah pernah diinput
+                                    //1 = found (ketemu)
+                                    //0 = not found (tidak ketemu)
+
+                                    // gabungkan kode jurusan + nim ke nim_cari (tanpa mengubah kode_jurusan)
+                                    sprintf(nim_cari, "%s%d", dataJurusan[pilihan_input_jurusan-1].kode_jurusan, input_nim);
+                                    hasil_cek = cariMahasiswaByNim(data, nim_cari);
+
+                                    if(hasil_cek==1){
+                                        printf("Maaf NIM sudah terpakai, input ulang NIM! \n");
+                                    }
+
+                                }while(hasil_cek == 1);
+
+                                // tambahkan nim dengan kode jurusan
+                                strcpy(mhs.nim, (strcat(dataJurusan[pilihan_input_jurusan-1].kode_jurusan, nim_str)));
+
+                                // input data nama dst
+                                inputTeks("Masukkan nama : ", mhs.nama);
+                                printf("Masukkan jenis kelamin : ");
+                                scanf(" %c",&mhs.jenis_kelamin);
+                                inputTeks("Masukkan alamat: ", mhs.alamat);
+
+                                //append ke mahasiswa.txt
+
+                                FILE *fp = fopen(FILE_NAME, "a");
+                                fprintf(fp, "\n%s;%s;%c;%s\n", mhs.nim, mhs.nama, mhs.jenis_kelamin, mhs.alamat);
+                                fclose(fp);
+
+                                printf("\n\nData berhasil ditambahkan!\n");
+                                system("pause");
+                                break;
                             }
-                            printf("Pilih jurusan:");
-                            pilihan_input_jurusan=inputAngka("");
-                            printf("Masukkkan NIM: %s", dataJurusan[pilihan_input_jurusan-1].kode_jurusan);
-                            input_nim=inputAngka("");
-                            char nim_str[10];
-                            sprintf(nim_str, "%d", input_nim);
-                            strcpy(mhs.nim,(strcat(dataJurusan[pilihan_input_jurusan-1].kode_jurusan, nim_str)));
-                            inputTeks("Masukkan nama:", mhs.nama);
-
-
-
-                            printf("Data berhasil ditambahkan!\n");
-                            system("pause");
-                            break;
 
                         case 3: { // Hapus Mahasiswa
                             /*
