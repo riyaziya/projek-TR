@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1763301568 source:d:\tr ddp\tr ddp\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1763301568 source:d:\ddp\projek-tr\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
