@@ -23,3 +23,4 @@
 702025023;Vina Maharani;P;Ambarawa
 702025024;Dedi Firmansyah;L;Magelang
 702025025;Rizka Amelia;P;Salatiga
+672025099;Afiyatar;L;Salatiga
