@@ -182,6 +182,18 @@ bool cariMahasiswaByNim(struct Mahasiswa daftar[], const char *nim) {
     return false;
 }
 
+int cariIndexMahasiswaByNim(struct Mahasiswa daftar[], const char *nim) {
+    for (int i = 0; i < 100; i++) {
+        if (daftar[i].nim[0] == '\0')
+            continue;
+
+        if (strcmp(daftar[i].nim, nim) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 int main() {
     int pilihanUtama, pilihanMahasiswa, pilihanJurusan;
 
@@ -195,7 +207,7 @@ int main() {
         tampilkanMenu();
         pilihanUtama = inputAngka("");
         switch (pilihanUtama) {
-              case 1: // MASTER DATA MAHASISWA
+                case 1: // MASTER DATA MAHASISWA
                 do {
                     tampilkanMenuMahasiswa();
                     pilihanMahasiswa = inputAngka("");
@@ -204,7 +216,7 @@ int main() {
                         case 1: // Daftar Mahasiswa
                             system("cls");
                             printf("=========================================================================================================\n");
-                            printf("|\t\t\t\t\t\tDaftar Mahasiswa\t\t\t\t\        |\n");
+                            printf("|\t\t\t\t\t\tDaftar Mahasiswa\t\t\t\t\t|\n");
                             printf("=========================================================================================================\n");
                             data = readMahasiswaFile();
                             if (data == NULL) {
@@ -218,7 +230,9 @@ int main() {
                                        "No", "NIM", "Jurusan", "Nama", "Jenis Kelamin", "Alamat");
                                 printf("---------------------------------------------------------------------------------------------------------\n");
                                 for (int i = 0; i < 100; i++) {
-                                    if (data[i].nim[0] != '\0') {
+                                    if (data[i].nama[0] == '\0') {
+                                        break;
+                                    } else {
                                         printf("| %-3d | %-10s | %-20s | %-20s | %-13c | %-20s |\n",
                                                i + 1,
                                                data[i].nim,
@@ -226,18 +240,15 @@ int main() {
                                                data[i].nama,
                                                data[i].jenis_kelamin,
                                                data[i].alamat);
-                                    } else {
-                                        break;
                                     }
                                 }
-                                printf("---------------------------------------------------------------------------------------------------------\n");
                             }
                             system("pause");
                             break;
 
 
                         case 2: // Tambah Mahasiswa
-                          {
+                            {
                                 system("cls");
                                 int pilihan_input_jurusan;
                                 int input_nim;
@@ -304,53 +315,180 @@ int main() {
                                 //append ke mahasiswa.txt
 
                                 FILE *fp = fopen(FILE_NAME, "a");
-                                fprintf(fp, "\n%s;%s;%c;%s\n", mhs.nim, mhs.nama, mhs.jenis_kelamin, mhs.alamat);
+                                fprintf(fp, "%s;%s;%c;%s\n", mhs.nim, mhs.nama, mhs.jenis_kelamin, mhs.alamat);
                                 fclose(fp);
 
                                 printf("\n\nData berhasil ditambahkan!\n");
                                 system("pause");
                                 break;
                             }
+                        case 3:
+                            {
+                                // Hapus Mahasiswa
+                                /*
+                                   1. Baca file data mahasiswa
+                                   2. Cari mahasiswa yg ingin dihapus
+                                   3. Simpan index/urutan mahasiswa yg ingin dihapus
+                                   4. Tulis ulang file tanpa urutan mahasiswa yg dihapus
+                                */
+                                system("cls");
+                                printf("=== Hapus Data Mahasiswa ===\n");
+                                data = readMahasiswaFile();
+                                int input_nim;
+                                char nim_str[10];
+                                int hasil_cek = -1;
+                                do{
+                                    printf("Masukkan NIM : ");
+                                    // input nim (angka)
+                                    input_nim = inputAngka("");
+                                    if(input_nim == 0){
+                                        break;
+                                    }
+                                    // ubah nim ke char[10]
+                                    sprintf(nim_str, "%d", input_nim);
 
-                        case 3: { // Hapus Mahasiswa
-                            /*
-                            if (jumlahMahasiswa == 0) { printf("Data kosong.\n"); break; }
-                            int nimHapus = inputAngka("Masukkan NIM yang akan dihapus: ");
-                            int idx = -1;
-                            for (int i = 0; i < jumlahMahasiswa; i++)
-                                if (data[i].nim == nimHapus) { idx = i; break; }
+                                    //cek nim apakah sudah pernah diinput
+                                    //1 = found (ketemu)
+                                    //0 = not found (tidak ketemu)
 
-                            if (idx == -1)
-                                printf("Mahasiswa tidak ditemukan.\n");
-                            else {
-                                char konfirmasi;
-                                printf("Hapus %s (NIM %d)? (Y/N): ", data[idx].nama, nimHapus);
-                                scanf(" %c", &konfirmasi);
-                                if (konfirmasi=='Y'||konfirmasi=='y') {
-                                    for (int i = idx; i < jumlahMahasiswa-1; i++)
-                                        data[i] = data[i+1];
-                                    jumlahMahasiswa--;
-                                    printf("Data berhasil dihapus.\n");
-                                } else printf("Penghapusan dibatalkan.\n");
+                                    hasil_cek = cariIndexMahasiswaByNim(data, nim_str);
+
+                                    if(hasil_cek==-1)
+                                    {
+                                        // index tidak ditemukan/nim tidak ditemukan
+                                        printf("Maaf NIM tidak ditemukan, input ulang NIM (input 0 untuk kembali)! \n");
+                                    }else
+                                    {
+                                        // hasil_cek = index mahasiswa yg ingin dihapus
+                                        printf("Data Mahasiswa : \n");
+                                        printf("NIM           : %s\n", data[hasil_cek].nim);
+                                        printf("Nama          : %s\n", data[hasil_cek].nama);
+                                        printf("Jurusan       : %s\n", data[hasil_cek].nama_jurusan);
+                                        printf("Jenis Kelamin : %c\n", data[hasil_cek].jenis_kelamin);
+                                        printf("Alamat        : %s\n\n", data[hasil_cek].alamat);
+                                        printf("Yakin ingin menghapus data mahasiswa? (y/n)");
+                                        char pilihan;
+                                        scanf("%c", &pilihan);
+                                        if(pilihan == 'y' || pilihan == 'Y'){
+                                            FILE *fp = fopen(FILE_NAME, "w");
+                                            for (int i = 0; i < 100; i++) {
+                                                // Berhenti jika data sudah habis
+                                                if (data[i].nim[0] == '\0') {
+                                                    break;
+                                                }
+
+                                                // Skip data yang akan dihapus (hasil_cek = index yang ditemukan)
+                                                if (i == hasil_cek) {
+                                                    continue;
+                                                }else{
+                                                    // Tulis data lain ke file
+                                                    fprintf(fp, "%s;%s;%c;%s\n",
+                                                            data[i].nim,
+                                                            data[i].nama,
+                                                            data[i].jenis_kelamin,
+                                                            data[i].alamat);
+                                                }
+
+                                            }
+                                            fclose(fp);
+                                            printf("Data Mahasiswa berhasil dihapus! \n\n");
+                                            system("pause");
+                                        }else{
+                                            system("pause");
+                                            break;
+
+                                        }
+                                    }
+                                }while(hasil_cek == -1);
+
+                                break;
                             }
-                            */
-                            break;
-                        }
 
-                        case 4: // Edit Mahasiswa
-                            /*
-                            if (jumlahMahasiswa == 0) { printf("Data kosong.\n"); break; }
-                            int nimEdit, idxEdit=-1;
-                            nimEdit = inputAngka("Masukkan NIM yang akan diedit: ");
-                            for (int i=0;i<jumlahMahasiswa;i++)
-                                if (data[i].nim==nimEdit) { idxEdit=i; break; }
-                            if (idxEdit==-1) printf("Mahasiswa tidak ditemukan.\n");
-                            else {
-                                inputTeks("Masukkan Nama baru: ", data[idxEdit].nama);
-                                inputTeks("Masukkan Jurusan baru: ", data[idxEdit].jurusan);
-                                printf("Data berhasil diupdate!\n");
-                            }
-                            */
+                        case 4:
+                                // Edit Mahasiswa
+                                /*
+                                   1. Baca file data mahasiswa
+                                   2. Cari mahasiswa yg ingin diedit
+                                   3. Simpan index/urutan mahasiswa yg ingin diedit
+                                   4. Input data baru (NIM tidak boleh diedit)
+                                   5. Tulis ulang file tetapi index yg ingin diedit, tulis data yg baru
+                                */
+                                system("cls");
+                                printf("=== Edit Data Mahasiswa ===\n");
+                                data = readMahasiswaFile();
+                                int input_nim;
+                                char nim_str[10];
+                                int hasil_cek = -1;
+                                do{
+                                    printf("Masukkan NIM : ");
+                                    // input nim (angka)
+                                    input_nim = inputAngka("");
+                                    if(input_nim == 0){
+                                        break;
+                                    }
+                                    // ubah nim ke char[10]
+                                    sprintf(nim_str, "%d", input_nim);
+
+                                    //cek nim apakah sudah pernah diinput
+                                    //1 = found (ketemu)
+                                    //0 = not found (tidak ketemu)
+
+                                    hasil_cek = cariIndexMahasiswaByNim(data, nim_str);
+
+                                    if(hasil_cek==-1)
+                                    {
+                                        // index tidak ditemukan/nim tidak ditemukan
+                                        printf("Maaf NIM tidak ditemukan, input ulang NIM (input 0 untuk kembali)! \n");
+                                    }else
+                                    {
+                                        char input_nama[49];
+                                        char input_alamat[49];
+                                        // hasil_cek = index mahasiswa yg ingin diubah
+                                        printf("Data Mahasiswa Sebelumnya: \n");
+                                        printf("NIM           : %s\n", data[hasil_cek].nim);
+                                        printf("Nama          : %s\n", data[hasil_cek].nama);
+                                        printf("Jurusan       : %s\n", data[hasil_cek].nama_jurusan);
+                                        printf("Jenis Kelamin : %c\n", data[hasil_cek].jenis_kelamin);
+                                        printf("Alamat        : %s\n\n", data[hasil_cek].alamat);
+                                        printf("-----------------------------------------------\n\n");
+                                        printf("Perubahan Data Mahasiswa :\n");
+                                        printf("NIM           : %s\n", data[hasil_cek].nim);
+                                        inputTeks("Nama          : ", input_nama);
+                                        strcpy(data[hasil_cek].nama, input_nama);
+                                        printf("Jurusan       : %s\n", data[hasil_cek].nama_jurusan);
+                                        printf("Jenis Kelamin : ");
+                                        scanf(" %c",&data[hasil_cek].jenis_kelamin);
+                                        inputTeks("Alamat        : ", input_alamat);
+                                        strcpy(data[hasil_cek].alamat, input_alamat);
+                                        printf("\nYakin ingin mengubah data mahasiswa? (y/n)");
+                                        char pilihan;
+                                        scanf(" %c", &pilihan);
+                                        if(pilihan == 'y' || pilihan == 'Y'){
+                                            FILE *fp = fopen(FILE_NAME, "w");
+                                            for (int i = 0; i < 100; i++) {
+                                                // Berhenti jika data sudah habis
+                                                if (data[i].nim[0] == '\0') {
+                                                    break;
+                                                }
+
+                                                // Tulis ulang ke file
+                                                fprintf(fp, "%s;%s;%c;%s\n",
+                                                            data[i].nim,
+                                                            data[i].nama,
+                                                            data[i].jenis_kelamin,
+                                                            data[i].alamat);
+
+
+                                            }
+                                            fclose(fp);
+                                            printf("Data Mahasiswa berhasil diubah! \n\n");
+                                            system("pause");
+                                        }else{
+                                            system("pause");
+                                            break;
+                                        }
+                                    }
+                                }while(hasil_cek == -1);
                             break;
 
                         case 5:
@@ -466,10 +604,8 @@ int main() {
                 } while (pilihanJurusan != 5);
                 break;
 
-           case 3://REPORTING
+            case 3://REPORTING
                 printf("Menu Report masih belom dibuat.\n");
-
-
                 break;
 
             case 4:
@@ -479,9 +615,9 @@ int main() {
             default:
                 printf("Opsi tidak valid.\n2");
                 break;
-        }
 
-    } while (pilihanUtama != 4);
+        }
+    }while(pilihanUtama != 4);
 
     return 0;
 }
