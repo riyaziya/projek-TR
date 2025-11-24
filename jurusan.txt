@@ -2,3 +2,4 @@
 68;Sistem Informasi
 69;DKV
 70;Pendidikan TI
+74;Ilmu Perpustakaan

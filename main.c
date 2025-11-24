@@ -154,8 +154,8 @@ void tampilkanMenuJurusan() {
     printf("\n=== Master Data Jurusan ===\n");
     printf("1. Daftar Jurusan\n");
     printf("2. Tambah Jurusan\n");
-    printf("3. Edit Jurusan\n");
-    printf("4. Hapus Jurusan\n");
+    printf("3. Hapus Jurusan\n");
+    printf("4. Edit Jurusan\n");
     printf("5. Kembali ke Menu Utama\n");
     printf("Pilih: ");
 }
@@ -188,6 +188,28 @@ int cariIndexMahasiswaByNim(struct Mahasiswa daftar[], const char *nim) {
             continue;
 
         if (strcmp(daftar[i].nim, nim) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+bool cariJurusanByKode(struct Jurusan daftar[], const char *kode){
+    for(int i=0;i<25;i++){
+        if (daftar[i].kode_jurusan[0] == '\0')
+            continue;
+        if(strcmp(daftar[i].kode_jurusan, kode)==0){
+            return true;
+        }
+    }
+    return false;
+}
+
+int cariIndexJurusanByKode(struct Jurusan daftar[], const char *kode){
+    for(int i=0;i<25;i++){
+        if (daftar[i].kode_jurusan[0] == '\0')
+            continue;
+        if(strcmp(daftar[i].kode_jurusan, kode)==0){
             return i;
         }
     }
@@ -240,8 +262,10 @@ int main() {
                                                data[i].nama,
                                                data[i].jenis_kelamin,
                                                data[i].alamat);
+
                                     }
                                 }
+                                printf("---------------------------------------------------------------------------------------------------------\n");
                             }
                             system("pause");
                             break;
@@ -405,6 +429,8 @@ int main() {
                             }
 
                         case 4:
+                              {
+
                                 // Edit Mahasiswa
                                 /*
                                    1. Baca file data mahasiswa
@@ -490,7 +516,7 @@ int main() {
                                     }
                                 }while(hasil_cek == -1);
                             break;
-
+                              }
                         case 5:
                             printf("Kembali ke menu utama...\n");
                             break;
@@ -501,96 +527,211 @@ int main() {
                 } while (pilihanMahasiswa != 5);
                 break;
 
-            case 2: // MASTER DATA JURUSAN
+                case 2: // MASTER DATA JURUSAN
                 do {
                     tampilkanMenuJurusan();
                     pilihanJurusan = inputAngka("");
 
                     switch (pilihanJurusan) {
                           case 1: // Daftar Jurusan
-                            system("cls");
-                            printf("============================================\n");
-                            printf("|              Daftar Jurusan              |\n");
-                            printf("============================================\n");
-                            dataJurusan = readJurusanFile();
-                            if (dataJurusan == NULL) {
-                                printf("Daftar jurusan kosong atau file tidak ditemukan.\n");
+                            {
+                                system("cls");
+                                printf("============================================\n");
+                                printf("|             Daftar Jurusan               |\n");
+                                printf("============================================\n");
+                                dataJurusan = readJurusanFile();
+                                if (dataJurusan == NULL) {
+                                    printf("Daftar jurusan kosong atau file tidak ditemukan.\n");
+                                    break;
+                                }
+                                if (dataJurusan[0].kode_jurusan == NULL){
+                                    printf("Daftar Jurusan kosong.\n");
+                                }else{
+                                    printf("| %-3s | %-10s | %-19s |\n",
+                                           "No", "Kode Jurusan", "Nama Jurusan");
+                                    printf("--------------------------------------------\n");
+                                    for (int i = 0; i < 100; i++) {
+                                        if (dataJurusan[i].nama_jurusan[0] == '\0') {
+                                            break;
+                                        } else {
+                                            printf("| %-3d | %-12s | %-19s |\n",
+                                                   i + 1,
+                                                   dataJurusan[i].kode_jurusan,
+                                                   dataJurusan[i].nama_jurusan);
+                                        }
+                                    }
+                                    printf("--------------------------------------------\n");
+                                }
+                                system("pause");
                                 break;
                             }
-                            if (dataJurusan[0].kode_jurusan == NULL){
-                                printf("Daftar Jurusan kosong.\n");
-                            }else{
-                                printf("| %-3s | %-10s | %-19s |\n",
-                                       "No", "Kode Jurusan", "Nama Jurusan");
-                                printf("--------------------------------------------\n");
-                                for (int i = 0; i < 100; i++) {
-                                    if (dataJurusan[i].kode_jurusan[0] != '\0') {
-                                        printf("| %-3d | %-12s | %-19s |\n",
-                                               i + 1,
-                                               dataJurusan[i].kode_jurusan,
-                                               dataJurusan[i].nama_jurusan);
-                                    } else {
-                                        break;
-                                    }
-                                }
-                                printf("--------------------------------------------\n");
-                            }
-                            system("pause");
-                            break;
-
 
                         case 2: // Tambah Jurusan
-                            /*
-                             inputTeks("Masukkan Kode Jurusan: ", jurusan[jumlahJurusan].kode);
-                            inputTeks("Masukkan Nama Jurusan: ", jurusan[jumlahJurusan].nama);
-                            jumlahJurusan++;
-                            printf("Data jurusan berhasil ditambahkan!\n");
+                            {
+                                system("cls");
+                                struct Jurusan jrs;
+                                printf("=== Tambah Jurusan ===\n");
+                                dataJurusan = readJurusanFile();
+                                bool hasil_cek = false;
+                                int input_kode;
+                                char cari_kode[3];
+                                do{
+                                    printf("Masukkan kode jurusan : ");
+                                    input_kode = inputAngka("");
+                                    sprintf(cari_kode, "%d", input_kode);
+
+                                    hasil_cek = cariJurusanByKode(dataJurusan, cari_kode);
+                                    if(hasil_cek==1){
+                                        printf("Maaf kode jurusan sudah digunakan, input ulang kode! \n");
+                                    }else{
+                                        //masukkan data kode
+                                        strcpy(jrs.kode_jurusan, cari_kode);
+                                        inputTeks("Masukkan nama jurusan : ", jrs.nama_jurusan);
+                                        FILE *fp = fopen(FILE_JURUSAN_NAME, "a");
+                                        fprintf(fp, "\n%s;%s\n", jrs.kode_jurusan,jrs.nama_jurusan);
+                                        fclose(fp);
+                                        printf("Jurusan berhasil ditambahkan! \n\n");
+                                        system("pause");
+                                    }
+                                }while(hasil_cek == 1);
+                            }
                             break;
 
+                        case 3: // Hapus Jurusan
+                            {
+                                system("cls");
+                                printf("=== Hapus Data Jurusan ===\n");
+                                dataJurusan = readJurusanFile();
+                                int input_kode;
+                                char kode_str[10];
+                                int hasil_cek = -1;
+                                do{
+                                    printf("Masukkan Kode : ");
+                                    input_kode = inputAngka("");
+                                    if(input_kode == 0){
+                                        break;
+                                    }
+                                    sprintf(kode_str, "%d", input_kode);
+
+                                    //cek kode apakah sudah pernah diinput
+                                    //1 = found (ketemu)
+                                    //0 = not found (tidak ketemu)
+
+                                    hasil_cek = cariIndexJurusanByKode(dataJurusan, kode_str);
+
+                                    if(hasil_cek==-1)
+                                    {
+                                        // index tidak ditemukan tidak ditemukan
+                                        printf("Maaf Kode tidak ditemukan, input ulang Kode (input 0 untuk kembali)! \n");
+                                    }else
+                                    {
+                                        // hasil_cek = index jurusan yg ingin dihapus
+                                        printf("Data Jurusan : \n");
+                                        printf("Kode Jurusan  : %s\n", dataJurusan[hasil_cek].kode_jurusan);
+                                        printf("Nama Jurusan  : %s\n", dataJurusan[hasil_cek].nama_jurusan);
+                                        printf("Yakin ingin menghapus data jurusan? (y/n)");
+                                        char pilihan;
+                                        scanf("%c", &pilihan);
+                                        if(pilihan == 'y' || pilihan == 'Y'){
+                                            FILE *fp = fopen(FILE_JURUSAN_NAME, "w");
+                                            for (int i = 0; i < 100; i++) {
+                                                // Berhenti jika data sudah habis
+                                                if (dataJurusan[i].kode_jurusan[0] == '\0') {
+                                                    break;
+                                                }
+
+                                                // Skip data yang akan dihapus (hasil_cek = index yang ditemukan)
+                                                if (i == hasil_cek) {
+                                                    continue;
+                                                }else{
+                                                    // Tulis data lain ke file
+                                                    fprintf(fp, "%s;%s\n",
+                                                            dataJurusan[i].kode_jurusan,
+                                                            dataJurusan[i].nama_jurusan);
+                                                }
+
+                                            }
+                                            fclose(fp);
+                                            printf("Data Jurusan berhasil dihapus! \n\n");
+                                            system("pause");
+                                        }else{
+                                            system("pause");
+                                            break;
+
+                                        }
+                                    }
+                                }while(hasil_cek == -1);
+                                break;
+                            }
+                        case 4: // Edit Jurusan
+                            {
+                                system("cls");
+                                printf("=== Edit Data Jurusan ===\n");
+                                dataJurusan = readJurusanFile();
+                                int input_kode;
+                                char kode_str[10];
+                                int hasil_cek = -1;
+                                do{
+                                    printf("Masukkan Kode Jurusan : ");
+                                    // input nim (angka)
+                                    input_kode = inputAngka("");
+                                    if(input_kode == 0){
+                                        break;
+                                    }
+                                    // ubah nim ke char[10]
+                                    sprintf(kode_str, "%d", input_kode);
+
+                                    //cek nim apakah sudah pernah diinput
+                                    //1 = found (ketemu)
+                                    //0 = not found (tidak ketemu)
+
+                                    hasil_cek = cariIndexJurusanByKode(dataJurusan, kode_str);
+
+                                    if(hasil_cek==-1)
+                                    {
+                                        // index tidak ditemukan/nim tidak ditemukan
+                                        printf("Maaf Kode tidak ditemukan, input ulang Kode (input 0 untuk kembali)! \n");
+                                    }else
+                                    {
+                                        char nama_jurusan[26];
+                                        // hasil_cek = index mahasiswa yg ingin diubah
+                                        printf("Data Jurusan Sebelumnya: \n");
+                                        printf("Kode Jurusan     : %s\n", dataJurusan[hasil_cek].kode_jurusan);
+                                        printf("Nama Jurusan     : %s\n", dataJurusan[hasil_cek].nama_jurusan);
+                                        printf("-----------------------------------------------\n\n");
+                                        printf("Perubahan Data Jurusan :\n");
+                                        printf("Kode Jurusan     : %s\n", dataJurusan[hasil_cek].kode_jurusan);
+                                        inputTeks("Nama Jurusan     : ", nama_jurusan);
+                                        strcpy(dataJurusan[hasil_cek].nama_jurusan, nama_jurusan);
+                                        printf("\nYakin ingin mengubah data jurusan? (y/n)");
+                                        char pilihan;
+                                        scanf(" %c", &pilihan);
+                                        if(pilihan == 'y' || pilihan == 'Y'){
+                                            FILE *fp = fopen(FILE_JURUSAN_NAME, "w");
+                                            for (int i = 0; i < 100; i++) {
+                                                // Berhenti jika data sudah habis
+                                                if (dataJurusan[i].kode_jurusan[0] == '\0') {
+                                                    break;
+                                                }
+
+                                                // Tulis ulang ke file
+                                                fprintf(fp, "%s;%s\n",
+                                                            dataJurusan[i].kode_jurusan,
+                                                            dataJurusan[i].nama_jurusan);
 
 
-                            */
-                            break;
-
-                        case 3: // Edit Jurusan
-
-                           /* if (jumlahJurusan==0) { printf("Data kosong.\n"); break; }
-                            char kodeEdit[10];
-                            inputTeks("Masukkan Kode Jurusan yang akan diedit: ", kodeEdit);
-                            int idxJur=-1;
-                            for (int i=0;i<jumlahJurusan;i++)
-                                if (strcmp(jurusan[i].kode,kodeEdit)==0) { idxJur=i; break; }
-                            if (idxJur==-1) printf("Jurusan tidak ditemukan.\n");
-                            else {
-                                inputTeks("Masukkan Kode baru: ", jurusan[idxJur].kode);
-                                inputTeks("Masukkan Nama baru: ", jurusan[idxJur].nama);
-                                printf("Data berhasil diupdate!\n");
-                            }*/
-
-                            break;
-
-                        case 4: // Hapus Jurusan
-
-                           /* if (jumlahJurusan==0) { printf("Data kosong.\n"); break; }
-                            char kodeHapus[10];
-                            inputTeks("Masukkan Kode Jurusan yang akan dihapus: ", kodeHapus);
-                            int idxHapus=-1;
-                            for (int i=0;i<jumlahJurusan;i++)
-                                if (strcmp(jurusan[i].kode,kodeHapus)==0) { idxHapus=i; break; }
-                            if (idxHapus==-1) printf("Jurusan tidak ditemukan.\n");
-                            else {
-                                char konfirmasi;
-                                printf("Hapus jurusan %s (Kode %s)? (Y/N): ", jurusan[idxHapus].nama, kodeHapus);
-                                scanf(" %c",&konfirmasi);
-                                if (konfirmasi=='Y'||konfirmasi=='y') {
-                                    for (int i=idxHapus;i<jumlahJurusan-1;i++)
-                                        jurusan[i]=jurusan[i+1];
-                                    jumlahJurusan--;
-                                    printf("Data berhasil dihapus.\n");
-                                } else printf("Penghapusan dibatalkan.\n");
-                            }*/
-
-                            break;
+                                            }
+                                            fclose(fp);
+                                            printf("Data Jurusan berhasil diubah! \n\n");
+                                            system("pause");
+                                        }else{
+                                            system("pause");
+                                            break;
+                                        }
+                                    }
+                                }while(hasil_cek == -1);
+                                break;
+                            }
 
                         case 5:
                             printf("Kembali ke menu utama...\n");
@@ -603,7 +744,6 @@ int main() {
 
                 } while (pilihanJurusan != 5);
                 break;
-
             case 3://REPORTING
                 printf("Menu Report masih belom dibuat.\n");
                 break;
