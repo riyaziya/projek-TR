@@ -262,10 +262,8 @@ int main() {
                                                data[i].nama,
                                                data[i].jenis_kelamin,
                                                data[i].alamat);
-
                                     }
                                 }
-                                printf("---------------------------------------------------------------------------------------------------------\n");
                             }
                             system("pause");
                             break;
@@ -429,8 +427,6 @@ int main() {
                             }
 
                         case 4:
-                              {
-
                                 // Edit Mahasiswa
                                 /*
                                    1. Baca file data mahasiswa
@@ -516,7 +512,7 @@ int main() {
                                     }
                                 }while(hasil_cek == -1);
                             break;
-                              }
+
                         case 5:
                             printf("Kembali ke menu utama...\n");
                             break;

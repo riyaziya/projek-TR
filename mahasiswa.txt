@@ -24,5 +24,4 @@
 702025024;Dedi Firmansyah;L;Magelang
 702025025;Rizka Amelia;P;Salatiga
 672025099;Dirga Dian;P;Salatiga
-672025101;dsfaf;p;sdfa
-702025199;;p;khddks
+672025199;Christian Arnold;L;Bali
