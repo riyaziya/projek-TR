@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #define FILE_NAME "mahasiswa.txt"
 #define FILE_JURUSAN_NAME "jurusan.txt"
@@ -170,76 +171,122 @@ void tampilkanMenuReporting() {
     printf("Pilih: ");
 }
 void unduhDataMahasiswa() {
-    int pilihanunduhmahasiswa;
-    FILE *src;
-    char line[200];
-
-    src = fopen("mahasiswa.txt", "r"); 
-    if (!src) {
-        printf("File sumber tidak ditemukan!\n");
+    struct Mahasiswa *daftarMhs = readMahasiswaFile();
+    struct Jurusan *daftarJur = readJurusanFile();
+    if (!daftarMhs || !daftarJur) {
+        printf("Data mahasiswa atau jurusan tidak ditemukan!\n");
         return;
     }
 
-    printf("Pilih format unduh:\n");
-    printf("1. TXT\n");
-    printf("2. CSV\n");
-    pilihanunduhmahasiswa = inputAngka("Masukkan pilihan (1/2): ");
+    int countMhs = 0, countJur = 0;
+    while (daftarMhs[countMhs].nim[0] != '\0') countMhs++;
+    while (daftarJur[countJur].kode_jurusan[0] != '\0') countJur++;
 
-    if (pilihanunduhmahasiswa == 1) {
-        FILE *dst = fopen("hasil_download.txt", "w");
-        if (!dst) {
-            printf("Gagal membuat file TXT!\n");
-            fclose(src);
-            return;
-        }
+    int pilihan;
+    printf("Pilih format unduh:\n1. TXT\n2. CSV\n");
+    pilihan = inputAngka("Masukkan pilihan (1/2): ");
 
-        fprintf(dst, "+-----------+--------------------+-----+-------------+\n");
-        fprintf(dst, "|   NIM     |       Nama         | JK  |   Asal      |\n");
-        fprintf(dst, "+-----------+--------------------+-----+-------------+\n");
-
-        while (fgets(line, sizeof(line), src)) {
-            char *nim = strtok(line, ";");
-            char *nama = strtok(NULL, ";");
-            char *jk   = strtok(NULL, ";");
-            char *asal = strtok(NULL, ";\n");
-
-            fprintf(dst, "| %-9s | %-18s | %-3s | %-11s |\n",
-                    nim, nama, jk, asal);
-        }
-
-        fprintf(dst, "+-----------+--------------------+-----+-------------+\n");
-        fclose(dst);
-        printf("Data berhasil diunduh di: hasil_mahasiswa.txt\n");
-
-    } else if (pilihanunduhmahasiswa == 2) {
-        FILE *dst = fopen("mahasiswa.csv", "w");
-        if (!dst) {
-            printf("Gagal membuat file CSV!\n");
-            fclose(src);
-            return;
-        }
-
-        fprintf(dst, "NIM;Nama;JK;Asal\n");
-
-        while (fgets(line, sizeof(line), src)) {
-            char nim[20], nama[50], jk[5], asal[50];
-            if (sscanf(line, "%[^;];%[^;];%[^;];%[^\n]", nim, nama, jk, asal) == 4) {
-                fprintf(dst, "%s;%s;%s;%s\n", nim, nama, jk, asal);
+    // Hitung jumlah mahasiswa per jurusan
+    int maxRows = 0;
+    int jumlahPerJurusan[25] = {0};
+    for (int j = 0; j < countJur; j++) {
+        for (int i = 0; i < countMhs; i++) {
+            if (strcmp(daftarMhs[i].nama_jurusan, daftarJur[j].nama_jurusan) == 0) {
+                jumlahPerJurusan[j]++;
             }
         }
+        if (jumlahPerJurusan[j] > maxRows)
+            maxRows = jumlahPerJurusan[j];
+    }
+
+    if (pilihan == 1) { // TXT
+        FILE *dst = fopen("hasil_mahasiswa.txt", "w");
+        if (!dst) { printf("Gagal membuat file TXT!\n"); return; }
+
+        // Header jurusan
+        for (int j = 0; j < countJur; j++)
+            fprintf(dst, "| %-30s ", daftarJur[j].nama_jurusan);
+        fprintf(dst, "|\n");
+
+        // Garis pemisah
+        for (int j = 0; j < countJur; j++)
+            fprintf(dst, "+--------------------------------");
+        fprintf(dst, "+\n");
+
+        // Isi mahasiswa per jurusan
+        for (int row = 0; row < maxRows; row++) {
+            for (int j = 0; j < countJur; j++) {
+                int found = 0;
+                int currentIndex = 0;
+                for (int i = 0; i < countMhs; i++) {
+                    if (strcmp(daftarMhs[i].nama_jurusan, daftarJur[j].nama_jurusan) == 0) {
+                        if (currentIndex == row) {
+                            char buf[35];
+                            snprintf(buf, sizeof(buf), "%s - %s", daftarMhs[i].nim, daftarMhs[i].nama);
+                            fprintf(dst, "| %-30s ", buf);
+                            found = 1;
+                            break;
+                        }
+                        currentIndex++;
+                    }
+                }
+                if (!found)
+                    fprintf(dst, "| %-30s ", "");
+            }
+            fprintf(dst, "|\n");
+        }
+
+        // Garis akhir
+        for (int j = 0; j < countJur; j++)
+            fprintf(dst, "+--------------------------------");
+        fprintf(dst, "+\n");
 
         fclose(dst);
-        printf("Data berhasil disimpan di: mahasiswa.csv\n");
+        printf("Data berhasil diunduh ke: hasil_mahasiswa.txt\n");
 
+    } else if (pilihan == 2) { // CSV
+        FILE *dst = fopen("mahasiswa.csv", "w");
+        if (!dst) { printf("Gagal membuat file CSV!\n"); return; }
+
+        // Header jurusan
+        for (int j = 0; j < countJur; j++) {
+            fprintf(dst, "%s", daftarJur[j].nama_jurusan);
+            if (j != countJur - 1) fprintf(dst, ";");
+        }
+        fprintf(dst, "\n");
+
+        // Isi per baris
+        for (int row = 0; row < maxRows; row++) {
+            for (int j = 0; j < countJur; j++) {
+                int found = 0;
+                int currentIndex = 0;
+                for (int i = 0; i < countMhs; i++) {
+                    if (strcmp(daftarMhs[i].nama_jurusan, daftarJur[j].nama_jurusan) == 0) {
+                        if (currentIndex == row) {
+                            fprintf(dst, "%s - %s", daftarMhs[i].nim, daftarMhs[i].nama);
+                            found = 1;
+                            break;
+                        }
+                        currentIndex++;
+                    }
+                }
+                if (!found) fprintf(dst, "");
+                if (j != countJur - 1) fprintf(dst, ";");
+            }
+            fprintf(dst, "\n");
+        }
+
+        fclose(dst);
+        printf("Data berhasil diunduh ke: mahasiswa.csv\n");
     } else {
         printf("Pilihan tidak valid!\n");
     }
 
-    fclose(src);
-
     printf("Tekan ENTER untuk kembali...");
     getchar();
 }
+
+
 void unduhDataJurusan() {
     int pilihanunduhjurusan;
     FILE *src;
@@ -265,15 +312,15 @@ void unduhDataJurusan() {
         fprintf(dst, "|   Kode     |     Nama Jurusan     |\n");
         fprintf(dst, "+------------+----------------------+\n");
 
-        while (fgets(line, sizeof(line), src)) {
-            char *kode = strtok(line, ";");
-            char *nama = strtok(NULL, "\n");
-            fprintf(dst, "| %-10s | %-20s |\n", kode, nama);
-        }
+        while (fgets(line, sizeof(line), src)) { 
+            char *kode = strtok(line, ";"); 
+            char *nama = strtok(NULL, "\n"); 
+            fprintf(dst, "| %-10s | %-20s |\n", kode, nama); }
 
         fprintf(dst, "+------------+----------------------+\n");
         fclose(dst);
         printf("Data jurusan berhasil diunduh ke: hasil_jurusan.txt\n");
+        getchar();
 
     } else if (pilihanunduhjurusan == 2) {
         FILE *dst = fopen("jurusan.csv", "w");
@@ -289,6 +336,7 @@ void unduhDataJurusan() {
 
         fclose(dst);
         printf("Data jurusan berhasil diunduh ke: jurusan.csv\n");
+        getchar();
 
     } else {
         printf("Pilihan tidak valid!\n");
@@ -296,8 +344,6 @@ void unduhDataJurusan() {
 
     fclose(src);
 }
-#include <stdio.h>
-#include <string.h>
 
 void statistikJurusan() {
     FILE *src = fopen("mahasiswa.txt", "r");
@@ -496,12 +542,18 @@ int main() {
                                 }while(hasil_cek == 1);
 
                                 // tambahkan nim dengan kode jurusan
-                                strcpy(mhs.nim, (strcat(dataJurusan[pilihan_input_jurusan-1].kode_jurusan, nim_str)));
+                                sprintf(mhs.nim, "%s%d", dataJurusan[pilihan_input_jurusan-1].kode_jurusan, input_nim);
 
                                 // input data nama dst
                                 inputTeks("Masukkan nama : ", mhs.nama);
-                                printf("Masukkan jenis kelamin : ");
-                                scanf(" %c",&mhs.jenis_kelamin);
+                                char jk;
+                                do{
+                                    printf("Jenis kelamin: (L/P) : ");
+                                    scanf(" %c", &jk);
+                                    jk = toupper(jk);
+                                }while(jk != 'L' && jk != 'P');
+                                mhs.jenis_kelamin = jk;                                
+                                while (getchar() != '\n'); 
                                 inputTeks("Masukkan alamat: ", mhs.alamat);
 
                                 //append ke mahasiswa.txt
@@ -754,7 +806,7 @@ int main() {
                                         strcpy(jrs.kode_jurusan, cari_kode);
                                         inputTeks("Masukkan nama jurusan : ", jrs.nama_jurusan);
                                         FILE *fp = fopen(FILE_JURUSAN_NAME, "a");
-                                        fprintf(fp, "\n%s;%s\n", jrs.kode_jurusan,jrs.nama_jurusan);
+                                        fprintf(fp, "%s;%s\n", jrs.kode_jurusan,jrs.nama_jurusan);
                                         fclose(fp);
                                         printf("Jurusan berhasil ditambahkan! \n\n");
                                         system("pause");
